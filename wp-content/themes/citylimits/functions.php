@@ -347,11 +347,13 @@ function citylimits_google_analytics() {
 				foreach ( $taxonomies as $tax_key => $taxonomy ) {
 
 					$terms = wp_get_post_terms( $post->ID, $taxonomy );
+					$contentGroups = array();
 					foreach ( $terms as $term ) {
 						if ( ! empty ( $term->name ) ){
-							echo "ga( 'set', 'contentGroup" . $tax_key . "', '" . esc_attr( $term->name ) . "' );\n";
+							$contentGroups[] = "'" . esc_attr( $term->name ) . "'";
 						}
 					}
+					echo "ga( 'set', 'contentGroup" . $tax_key . "', [ " . implode( ', ', $contentGroups ) . " ] );\n";
 				}
 			} elseif ( is_tax() ) {
 				$term = $wp_query->get_queried_object();
