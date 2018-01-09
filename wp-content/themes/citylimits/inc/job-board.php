@@ -12,6 +12,15 @@ add_action( 'wpjb_inject_media', function( $media ) {
 });
 
 /**
+ * Filter the citylimits job board query to not display indeed.com links.
+ */
+function citylimits_job_query( $select ) {
+	$select->order("t1.is_featured DESC, t1.job_created_at DESC, t1.id DESC, IF(t1.company_url NOT LIKE '%indeed.com%', 1, 0) DESC, t1.id DESC");
+	return $select;
+}
+add_filter( 'wpjb_jobs_query', 'citylimits_job_query', 1, 10 );
+
+/**
  * Utilities for loading default job types and categories
  */
 function reset_job_categories_and_types() {
