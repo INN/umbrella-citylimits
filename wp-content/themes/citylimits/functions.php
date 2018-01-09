@@ -123,6 +123,7 @@ add_action( 'wpjb_inject_media', function( $media ) {
  */
 function reset_job_categories_and_types() {
 	$directory = get_stylesheet_directory();
+
 	if ( file_exists( $directory . '/config.php' ) ) {
 		include_once $directory . '/config.php';
 	} else {

@@ -1,4 +1,9 @@
 <?php
+/**
+ * Configuration variables for WP Job Board
+ *
+ * @see reset_job_categories_and_types
+ */
 
 $wpjobboard_categories = array(
 	array(
