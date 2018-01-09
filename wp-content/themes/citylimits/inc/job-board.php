@@ -4,6 +4,80 @@
  */
 
 /**
+ * Don't use WPJB css
+ */
+add_action( 'wpjb_inject_media', function( $media ) {
+	$media['css'] = false;
+	return $media;
+});
+
+/**
+ * Utilities for loading default job types and categories
+ */
+function reset_job_categories_and_types() {
+	$directory = get_stylesheet_directory();
+
+	if ( file_exists( $directory . '/config.php' ) ) {
+		include_once $directory . '/config.php';
+	} else {
+		return false;
+	}
+
+	$query = new Daq_Db_Query();
+	$query->select( '*' )->from( 'Wpjb_Model_Category t1' );
+	$categories = $query->execute();
+	foreach ( $categories as $category ) {
+		$category->delete();
+	}
+
+	$query = new Daq_Db_Query();
+	$query->select( '*' )->from( 'Wpjb_Model_JobType t1' );
+	$types = $query->execute();
+	foreach ( $types as $type ) {
+		$type->delete();
+	}
+
+	if ( ! empty( $wpjobboard_job_types ) ) {
+		set_job_types( $wpjobboard_job_types );
+	}
+	if ( ! empty( $wpjobboard_categories ) ) {
+		set_job_categories( $wpjobboard_categories );
+	}
+
+	return true;
+}
+
+/**
+ * Utility function for creating WP Job Board categories, from an array.
+ *
+ * @uses Wpjb_Model_Category
+ */
+function set_job_categories( $categories ) {
+	foreach ( $categories as $category_attrs ) {
+		$cat = new Wpjb_Model_Category();
+		foreach ( $category_attrs as $k => $v ) {
+			$cat->set( $k, $v );
+		}
+		$cat->save();
+	}
+}
+
+/**
+ * Utility function for creating WP Job Board job types
+ *
+ * @uses Wpjb_Model_JobType
+ */
+function set_job_types( $types ) {
+	foreach ( $types as $type_attrs ) {
+		$jtype = new Wpjb_Model_JobType();
+		foreach ( $type_attrs as $k => $v ) {
+			$jtype->set( $k, $v );
+		}
+		$jtype->save();
+	}
+}
+
+/**
  * Enqueue custom sidebar styles
  */
 function largo_jobboard_enqueue() {
@@ -62,7 +136,7 @@ function largo_is_job_page() {
  */
 function largo_load_wpjoboard_templates($frontend, $result) {
 	$view = $frontend->controller->view;
-	$view->addDir(LARGO_EXT_DIR . '/templates/job-board', true);
+	$view->addDir( LARGO_EXT_DIR . '/templates/job-board', true );
 }
 add_action('wpjb_front_pre_render', 'largo_load_wpjoboard_templates', 0, 2);
 
@@ -70,7 +144,22 @@ add_action('wpjb_front_pre_render', 'largo_load_wpjoboard_templates', 0, 2);
  * Loads custom WPJobBoard widget templates
  */
 function largo_load_wpjoboard_widget_templates($view) {
-	$view->addDir(LARGO_EXT_DIR . '/templates/widgets', true);
+	$view->addDir( LARGO_EXT_DIR . '/templates/widgets', true );
 	return $view;
 }
 add_filter('daq_widget_view', 'largo_load_wpjoboard_widget_templates', 10, 1);
+
+/**
+ * Customize job add page title
+ */
+function customize_job_add_page_title( $arg ) {
+	$arg = trim( $arg );
+
+	if ( 'Create Ad' === $arg ) {
+		return __( 'Post a job', 'citylimits' );
+	} else {
+		return $arg;
+	}
+}
+add_filter( 'wpjb_set_title', 'customize_job_add_page_title' );
+
